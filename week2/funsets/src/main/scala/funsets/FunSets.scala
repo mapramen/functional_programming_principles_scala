@@ -11,15 +11,21 @@ trait FunSets extends FunSetsInterface {
   override type FunSet = Int => Boolean
 
   /**
-   * Indicates whether a set contains a given element.
+   * Returns the empty set
    */
-  def contains(s: FunSet, elem: Int): Boolean = s(elem)
+  def emptySet(): FunSet =
+    (x: Int) => false
 
   /**
    * Returns the set of the one given element.
    */
   def singletonSet(elem: Int): FunSet =
     (x: Int) => x == elem
+
+  /**
+   * Indicates whether a set contains a given element.
+   */
+  def contains(s: FunSet, elem: Int): Boolean = s(elem)
 
   /**
    * Returns the union of the two given sets,
@@ -77,12 +83,12 @@ trait FunSets extends FunSetsInterface {
    * Returns a set transformed by applying `f` to each element of `s`.
    */
   def map(s: FunSet, f: Int => Int): FunSet = {
-    def iter(a: Int): FunSet = {
-      if(a > this.bound) (x: Int) => false
-      else if(this.contains(s, a)) this.union(this.singletonSet(f(a)), iter(a + 1))
-      else iter(a + 1)
+    def iter(a: Int, acc: FunSet): FunSet = {
+      if(a > this.bound) acc
+      else if(this.contains(s, a)) iter(a + 1, this.union(this.singletonSet(f(a)), acc))
+      else iter(a + 1, acc)
     }
-    iter(-this.bound)
+    iter(-this.bound, this.emptySet())
   }
 
   /**
