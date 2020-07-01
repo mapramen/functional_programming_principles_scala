@@ -1,1 +1,1 @@
-# functional_programming_principles_scala
+# functional_programming_scala_specialization
