@@ -73,10 +73,10 @@ trait Solver extends GameDef {
       case x #:: xs => {
         lazy val newNeighbors = this.newNeighborsOnly(this.neighborsWithHistory(x._1, x._2), explored)
 
-        newNeighbors match {
+        x #:: (newNeighbors match {
           case LazyList() => from(xs, explored)
           case everythingElse => newNeighbors ++ from(xs ++ newNeighbors, explored ++ newNeighbors.map(_._1))
-        }
+        })
       }
     }
 
@@ -85,8 +85,8 @@ trait Solver extends GameDef {
    */
   lazy val pathsFromStart: LazyList[(Block, List[Move])]
     = this.from(
-        List((this.startBlock, Nil)).to(LazyList),
-        Set())
+        LazyList((this.startBlock, Nil)),
+        Set(this.startBlock))
 
   /**
    * Returns a lazy list of all possible pairs of the goal block along
