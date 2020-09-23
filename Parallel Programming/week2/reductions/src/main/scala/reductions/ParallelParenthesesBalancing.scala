@@ -72,7 +72,7 @@ object ParallelParenthesesBalancing extends ParallelParenthesesBalancingInterfac
         var i: Int = from
         while(i < until){
           sumValue += charMap(chars(i))
-          minValue = scala.math.min(minValue, sumValue)
+          minValue = minValue.min(sumValue)
           i += 1
         }
 
@@ -91,8 +91,7 @@ object ParallelParenthesesBalancing extends ParallelParenthesesBalancingInterfac
       }
     }
 
-    val (sumValue, minValue) = reduce(0, chars.length)
-    sumValue == 0 && minValue == 0
+    reduce(0, chars.length) == (0, 0)
   }
 
   // For those who want more:

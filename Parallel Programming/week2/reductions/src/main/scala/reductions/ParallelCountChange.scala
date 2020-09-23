@@ -51,12 +51,8 @@ object ParallelCountChange extends ParallelCountChangeInterface {
    *  coins for the specified amount of money.
    */
   def countChange(money: Int, coins: List[Int]): Int = {
-    if(money < 0){
-      0
-    }
-    else if(money == 0){
-      1
-    }
+    if (money < 0) 0
+    else if(money == 0) 1
     else{
       coins match {
         case Nil => 0
@@ -71,12 +67,8 @@ object ParallelCountChange extends ParallelCountChangeInterface {
    *  specified list of coins for the specified amount of money.
    */
   def parCountChange(money: Int, coins: List[Int], threshold: Threshold): Int = {
-    if(money < 0){
-      0
-    }
-    else if(money == 0){
-      1
-    }
+    if (money < 0) 0
+    else if(money == 0) 1
     else{
       coins match {
         case Nil => 0
