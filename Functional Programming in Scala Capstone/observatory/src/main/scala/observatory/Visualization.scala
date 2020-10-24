@@ -14,34 +14,33 @@ object Visualization extends VisualizationInterface {
     * @return The predicted temperature at `location`
     */
   def predictTemperature(temperatures: Iterable[(Location, Temperature)], location: Location): Temperature = {
-    val parTemperatures = temperatures.par
-    
-    val exactTemperatures = parTemperatures
-      .filter(_._1 == location)
-      .map(_._2)
+    val radius: Double = 6371.0
+    val p: Double = 6.0
 
-    if(!exactTemperatures.isEmpty){
-      exactTemperatures.head
+    def distance(a: Location, b: Location): Double = {
+      val phi1: Double = a.lat.toRadians
+      val phi2: Double = b.lat.toRadians
+      val delLambda: Double = a.lon.toRadians - b.lon.toRadians
+
+      radius * acos(sin(phi1) * sin(phi2) + cos(phi1) * cos(phi2) * cos(delLambda))
     }
-    else{
-      val radius: Double = 6371.0
-      val p: Double = 6.0
 
-      def distance(a: Location, b: Location): Double = {
-        val phi1: Double = a.lat.toRadians
-        val phi2: Double = b.lat.toRadians
-        val delLambda: Double = a.lon.toRadians - b.lon.toRadians
+    val weightedTemperatures = {
+      val parTemperatures = temperatures.par
+      
+      val exactTemperatures = parTemperatures
+        .filter(_._1 == location)
 
-        radius * acos(sin(phi1) * sin(phi2) + cos(phi1) * cos(phi2) * cos(delLambda))
+      if(!exactTemperatures.isEmpty){
+        exactTemperatures.map(x => (x._2.toDouble, 1.0))
       }
+      else{
+        val distanceAndTemperatures = parTemperatures
+          .map(x => (distance(x._1, location), x._2))
 
-      val distanceAndTemperatures = parTemperatures
-        .map(x => (distance(x._1, location), x._2))
+        val nearByTemperatures = distanceAndTemperatures
+          .filter(_._1 < 1)
 
-      val nearByTemperatures = distanceAndTemperatures
-        .filter(_._1 < 1)
-
-      val weightedTemperatures = {
         if(!nearByTemperatures.isEmpty){
           nearByTemperatures.map(x => (x._2.toDouble, 1.0))
         }
@@ -51,12 +50,12 @@ object Visualization extends VisualizationInterface {
             .map(x => (x._1 * x._2, x._1))
         }
       }
-
-      val (weightedTemperaturesSum, weightSum) 
-        = weightedTemperatures.reduce((a, b) => (a._1 + b._1, a._2 + b._2))
-
-      weightedTemperaturesSum / weightSum
     }
+    
+    val (weightedTemperaturesSum, weightSum) 
+      = weightedTemperatures.reduce((a, b) => (a._1 + b._1, a._2 + b._2))
+
+    weightedTemperaturesSum / weightSum
   }
 
   /**
