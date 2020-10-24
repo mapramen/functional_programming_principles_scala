@@ -30,20 +30,23 @@ object Extraction extends ExtractionInterface {
   def locateTemperatures(year: Year, stationsFile: String, temperaturesFile: String): Iterable[(LocalDate, Location, Temperature)] = {
     import scala.io.Source
 
-    def getTokenLines(path: String, tokenCount: Int): Seq[Array[String]] = {
+    def getTokenLines(path: String, tokensValidatar: (Array[String] => Boolean)): Seq[Array[String]] = {
       Source.fromInputStream(getClass.getResourceAsStream(path), "utf-8").getLines()
-        .map(line => line.split(','))
-        .filter(tokens => tokens.size == tokenCount)
+        .map(line => line.split(",", -1))
         .map(tokens => tokens.map(_.trim))
-        .filter(tokens => !tokens.exists(_.size == 0))
+        .filter(tokens => tokensValidatar(tokens))
         .toSeq
     }
     
-    val stations = getTokenLines(stationsFile, 4)
-      .map(x => (x(0).toInt, x(1).toInt, x(2).toDouble, x(3).toDouble))
+    val stations = getTokenLines(
+      stationsFile,
+      tokens => tokens.size == 4 && (tokens(0).nonEmpty || tokens(1).nonEmpty) && tokens(2).nonEmpty && tokens(3).nonEmpty)
+      .map(x => (x(0), x(1), x(2).toDouble, x(3).toDouble))
 
-    val temperatures = getTokenLines(temperaturesFile, 5)
-      .map(x => (x(0).toInt, x(1).toInt, x(2).toInt, x(3).toInt, x(4).toDouble))
+    val temperatures = getTokenLines(
+      temperaturesFile,
+      tokens => tokens.size == 5 && (tokens(0).nonEmpty || tokens(1).nonEmpty) && tokens(2).nonEmpty && tokens(3).nonEmpty && tokens(4).nonEmpty)
+      .map(x => (x(0), x(1), x(2).toInt, x(3).toInt, x(4).toDouble))
 
     val stationsDF = spark.sparkContext.parallelize(stations)
       .toDF("stn", "wban", "latitude", "longitude")
