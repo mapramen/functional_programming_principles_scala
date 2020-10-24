@@ -13,7 +13,17 @@ object Main extends App {
     (60.0, Color(255, 255, 255))
   )
 
-  val myImage = Visualization.visualize(temperatures, colors)
+  def generateImage(year: Year, tile: Tile, temperatures: Iterable[(Location, Temperature)]) = {
+    import java.io._
 
-  myImage.output(new java.io.File("target/some-image-4.png"))
+    val image = Interaction.tile(temperatures, colors, tile)
+    val file = new File(s"target/temperatures/${year}/${tile.zoom}/${tile.x}-${tile.y}.png")
+    file.getParentFile().mkdirs()
+    image.output(file)
+  }
+
+  Interaction.generateTiles(
+    List((2015, temperatures)),
+    generateImage
+  )
 }

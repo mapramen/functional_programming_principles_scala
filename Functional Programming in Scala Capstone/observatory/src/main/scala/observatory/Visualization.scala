@@ -25,7 +25,7 @@ object Visualization extends VisualizationInterface {
     }
     else{
       val radius: Double = 6371.0
-      val p: Double = 4.0
+      val p: Double = 6.0
 
       def distance(a: Location, b: Location): Double = {
         val phi1: Double = a.lat.toRadians
@@ -81,14 +81,25 @@ object Visualization extends VisualizationInterface {
       ) yield Location(-i, j)
     }
 
-    val sortedColors = colors.toList.sortBy(-_._1)
+    visualize(locations, temperatures, colors, 360, 180, 255)
+  }
 
+  def visualize(
+    locations: Iterable[Location],
+    temperatures: Iterable[(Location, Temperature)], 
+    colors: Iterable[(Temperature, Color)],
+    width: Int,
+    height: Int,
+    transparency: Int): Image =
+  {
+    val sortedColors = colors.toList.sortBy(-_._1)
+    
     val pixels = locations.par
       .map(location => getColor(sortedColors, predictTemperature(temperatures, location)))
-      .map({ case Color(red, green, blue) => RGBColor(red, green, blue).toPixel})
+      .map({ case Color(red, green, blue) => RGBColor(red, green, blue, transparency).toPixel})
       .toArray
 
-    Image(360, 180, pixels)
+    Image(width, height, pixels)
   }
 
   def getColor(points: Iterable[(Temperature, Color)], value: Temperature): Color = {
