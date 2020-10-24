@@ -20,7 +20,7 @@ object Interaction extends InteractionInterface {
     * @return A 256×256 image showing the contents of the given tile
     */
   def tile(temperatures: Iterable[(Location, Temperature)], colors: Iterable[(Temperature, Color)], tile: Tile): Image = 
-    Visualization.visualize(tile.subTiles(8).map(_.toLocation), temperatures,colors, 256, 256, 127)
+    Visualization.visualize(tile.subTiles(8).map(_.toLocation), temperatures, colors, 256, 256, 127)
 
   /**
     * Generates all the tiles for zoom levels 0 to 3 (included), for all the given years.
@@ -33,13 +33,11 @@ object Interaction extends InteractionInterface {
     yearlyData: Iterable[(Year, Data)],
     generateImage: (Year, Tile, Data) => Unit
   ): Unit = {
-    val tuples: Iterable[(Year, Tile, Data)] = for{
-      (year, data) <- yearlyData;
-      zoom <- 0 to 3;
-      tile <- Tile(0, 0, 0).subTiles(zoom)
-    } yield (year, tile, data)
-
-    tuples.par.foreach(x => generateImage(x._1, x._2, x._3))
+    for{
+      (year, data) <- yearlyData.par;
+      zoom <- (0 to 3).par;
+      tile <- Tile(0, 0, 0).subTiles(zoom).par
+    } generateImage(year, tile, data)
   }
 
 }
