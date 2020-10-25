@@ -7,7 +7,28 @@ import scala.math._
   * @param lat Degrees of latitude, -90 ≤ lat ≤ 90
   * @param lon Degrees of longitude, -180 ≤ lon ≤ 180
   */
-case class Location(lat: Double, lon: Double)
+case class Location(lat: Double, lon: Double) {
+  def gridCompatibleLocation = Location(
+    max(-89.0, min(90.0, lat)),
+    max(-180.0, min(179.0, lon))
+  )
+
+  def boundingGridLocations = {
+    val Location(gridLat, gridLon) = this.gridCompatibleLocation
+
+    Array(
+      GridLocation(gridLat.ceil.toInt, gridLon.floor.toInt),
+      GridLocation(gridLat.floor.toInt, gridLon.floor.toInt),
+      GridLocation(gridLat.ceil.toInt, gridLon.ceil.toInt),
+      GridLocation(gridLat.floor.toInt, gridLon.ceil.toInt)
+    )
+  }
+
+  def cellPoint = {
+    val Location(gridLat, gridLon) = this.gridCompatibleLocation
+    CellPoint(gridLon - gridLon.floor, gridLat.ceil - gridLat)
+  }
+}
 
 /**
   * Introduced in Week 3. Represents a tiled web map tile.

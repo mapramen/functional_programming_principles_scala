@@ -93,12 +93,11 @@ object Visualization extends VisualizationInterface {
   {
     val sortedColors = colors.toList.sortBy(-_._1)
     
-    val pixels = locations.par
+    val pixelColors = locations.par
       .map(location => getColor(sortedColors, predictTemperature(temperatures, location)))
-      .map({ case Color(red, green, blue) => RGBColor(red, green, blue, transparency).toPixel})
       .toArray
 
-    Image(width, height, pixels)
+    getImage(pixelColors, width, height, transparency)
   }
 
   def getColor(points: Iterable[(Temperature, Color)], value: Temperature): Color = {
@@ -134,5 +133,15 @@ object Visualization extends VisualizationInterface {
     }
 
     getColor(points, points.head, value)
+  }
+
+  def getImage(
+    colors: Array[Color],
+    width: Int,
+    height: Int,
+    transparency: Int): Image = 
+  {
+    val pixels = colors.map({ case Color(red, green, blue) => RGBColor(red, green, blue, transparency).toPixel})
+    Image(width, height, pixels)
   }
 }
