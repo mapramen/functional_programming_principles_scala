@@ -4,20 +4,40 @@ package observatory
   * 6th (and last) milestone: user interface polishing
   */
 object Interaction2 extends Interaction2Interface {
+  val temperatureColors = Seq(
+    (-15.0, Color(0, 0, 255)),
+    (-27.0, Color(255, 0, 255)),
+    (-50.0, Color(33, 0, 107)),
+    (-60.0, Color(0, 0, 0)),
+    (0.0, Color(0, 255, 255)),
+    (12.0, Color(255, 255, 0)),
+    (32.0, Color(255, 0, 0)),
+    (60.0, Color(255, 255, 255))
+  )
+
+  val deviationColors = Seq(
+    (7.0, Color(0, 0, 0)),
+    (4.0, Color(255, 0, 0)),
+    (2.0, Color(255, 255, 0)),
+    (0.0, Color(255, 255, 255)),
+    (-2.0, Color(0, 255, 255)),
+    (-7.0, Color(0, 0, 255))
+  )
 
   /**
     * @return The available layers of the application
     */
-  def availableLayers: Seq[Layer] = {
-    ???
-  }
+  def availableLayers: Seq[Layer] = Seq(
+    Layer(LayerName.Temperatures, temperatureColors, (1991 to 2015)),
+    Layer(LayerName.Deviations, deviationColors, (1991 to 2015))
+  )
 
   /**
     * @param selectedLayer A signal carrying the layer selected by the user
     * @return A signal containing the year bounds corresponding to the selected layer
     */
   def yearBounds(selectedLayer: Signal[Layer]): Signal[Range] = {
-    ???
+    Signal(selectedLayer().bounds)
   }
 
   /**
@@ -29,7 +49,8 @@ object Interaction2 extends Interaction2Interface {
     *         in the `selectedLayer` bounds.
     */
   def yearSelection(selectedLayer: Signal[Layer], sliderValue: Signal[Year]): Signal[Year] = {
-    ???
+    import scala.math._
+    Signal(max(selectedLayer().bounds.min, min(selectedLayer().bounds.max, sliderValue())))
   }
 
   /**
@@ -38,7 +59,7 @@ object Interaction2 extends Interaction2Interface {
     * @return The URL pattern to retrieve tiles
     */
   def layerUrlPattern(selectedLayer: Signal[Layer], selectedYear: Signal[Year]): Signal[String] = {
-    ???
+    Signal(s"/target/${selectedLayer().layerName.id}/${selectedYear()}/{z}/{x}-{y}.png")
   }
 
   /**
@@ -47,7 +68,14 @@ object Interaction2 extends Interaction2Interface {
     * @return The caption to show
     */
   def caption(selectedLayer: Signal[Layer], selectedYear: Signal[Year]): Signal[String] = {
-    ???
+    Signal({
+      val layerName = selectedLayer().layerName match {
+        case LayerName.Temperatures => "Temperatures"
+        case LayerName.Deviations => "Deviations"
+      }
+
+      s"${layerName} (${selectedYear()})"
+    })
   }
 
 }
